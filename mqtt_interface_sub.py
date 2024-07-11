@@ -45,7 +45,7 @@ class MQTT_SUB:
 
         client = self.__connect_mqtt()
         self.__subscribe(client=client)
-        client.loop_forever()
+        client.loop_start()
 
 
 if __name__ == "__main__":
