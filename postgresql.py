@@ -22,3 +22,32 @@ class POSTGRESQL:
             database=self._database 
         )
         print("connect DB {}".format(self._database))
+    
+    def exec_update(self,query:str):
+        with self._db_connection:
+            with self._db_connection.cursor() as cursor:
+                cursor.execute(query=query)
+            self._db_connection.commit()
+        cursor.close()
+    
+    def exec_select(self,query:str):
+        retV = None
+        with self._db_connection:
+            with self._db_connection.cursor() as cursor:
+                cursor.execute(query=query)
+                retV = cursor.fetchall()
+            self._db_connection.commit()
+        cursor.close()
+        return retV
+    
+
+if __name__ == "__main__":
+    DB = POSTGRESQL()
+    DB.setting_connection(host='localhost',user='postgres',database='mytable')
+    DB.connect_DB()
+    a=DB.exec_select('select * from data_bridge')
+    print(a)
+    DB.exec_update("UPDATE data_bridge SET value = 'False' where value='True'")
+    a=DB.exec_select('select * from data_bridge')
+    print(a)
+
