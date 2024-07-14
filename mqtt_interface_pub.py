@@ -1,5 +1,9 @@
 from paho.mqtt import client as mqtt
+from definition_mqttmsg import RobotActionMsg
+from socket import gethostname,gethostbyname
 
+# ip取得
+your_ip = gethostbyname(gethostname())
 
 class MQTT_PUB:
     def __init__(self) -> None:
@@ -65,8 +69,9 @@ class MQTT_PUB:
 
 if __name__ == "__main__":
     mqtt_PUBLISHER = MQTT_PUB()
-    mqtt_PUBLISHER.pub_con(broker_ip="192.168.2.102",topic_name="req/manage",pubmsg="Hello mqtt World!")
+    mqtt_PUBLISHER.pub_con(broker_ip=your_ip,topic_name="req/manage",pubmsg="Hello mqtt World!")
+    mqtt_PUBLISHER.pubmsg_setter(RobotActionMsg.ReqRobot1)
     mqtt_PUBLISHER.pub_run()
-    mqtt_PUBLISHER.pubmsg_setter("変えてみた")
-    mqtt_PUBLISHER.pub_run()
-    pass
+    #mqtt_PUBLISHER.pubmsg_setter("変えてみた")
+    #mqtt_PUBLISHER.pub_run()
+    
