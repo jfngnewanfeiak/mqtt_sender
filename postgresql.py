@@ -42,11 +42,16 @@ class POSTGRESQL:
     
 
 if __name__ == "__main__":
+    # インスタンス作成
     DB = POSTGRESQL()
+    # DBに接続するための設定
     DB.setting_connection(host='localhost',user='postgres',database='mytable')
+    # DBに接続
     DB.connect_DB()
+    # select実行(以下はdata_bridgeというテーブルから全ての情報を引き出す)
     a=DB.exec_select('select * from data_bridge')
     print(a)
+    # update実行 (data_bridgeテーブルのvalueというデータがTrueならFalseに書き換える)
     DB.exec_update("UPDATE data_bridge SET value = 'False' where value='True'")
     a=DB.exec_select('select * from data_bridge')
     print(a)
