@@ -49,7 +49,6 @@ class MQTT_PUB:
         self.__broker_setter(broker_ip=broker_ip)
         self.__topic_setter(topic_name=topic_name)
         self.pubmsg_setter(pubmsg=pubmsg)
-
         self.client = mqtt.Client()
         self.client.username_pw_set(self.username,self.password)
         self.client.on_connect = __on_connect
