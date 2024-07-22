@@ -22,7 +22,7 @@ def sub_callback(msg):
     print(msg)
     print('受け取ったmsg')
     split_msg = msg.split('/')
-    if split_msg[0] == "Req" and split_msg[1] == "Robot":
+    if split_msg[0] == "ReqRobot":
         create_flow(msg=split_msg[2])
 
 def create_flow(msg):
