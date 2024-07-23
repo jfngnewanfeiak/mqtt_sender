@@ -1,4 +1,8 @@
 from paho.mqtt import client as mqtt
+from socket import gethostname,gethostbyname
+
+# ip取得
+your_ip = gethostbyname(gethostname())
 
 class MQTT_SUB:
     def __init__(self) -> None:
@@ -49,11 +53,14 @@ class MQTT_SUB:
         client = self.__connect_mqtt()
         self.__subscribe(client=client)
         self.__callback = cb
-        client.loop_start()
+        # client.loop_start()
+        client.loop_forever()
+    def _callback(self,msg):
+        print(msg)
 
 
 if __name__ == "__main__":
     mqtt_SUBSCRIBER = MQTT_SUB()
     # ここは引数に合わせて設定
-    mqtt_SUBSCRIBER.sub_run(broker_ip="192.168.11.2",topic_name="test/mqtt")
+    mqtt_SUBSCRIBER.sub_run(broker_ip="localhost",topic_name="req/manage",cb=mqtt_SUBSCRIBER._callback)
 
