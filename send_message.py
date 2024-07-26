@@ -45,13 +45,14 @@ def create_flow(msg):
     destination_list = [] # 目的地を保存,indexはmove_listより
     if Robot_Status[msg][2] == RobotPositionName.warehouse0:
         # warehouse1とwarehouse2にロボットがいるかDBより確認
-        temp=DB.exec_select()
+        # warehouse1とwarehouse2にいるロボットのidを返す
+        temp=DB.exec_select("select id from robot_status where current_position='waitposition0' or current_position='waitposition1';")
         # warehouse2,1,0の順番でmove_listにappend
         
         pass
     elif Robot_Status[msg][2] == RobotPositionName.warehouse1:
         # warehouse2にロボットがいるか確認
-        DB.exec_select()
+        DB.exec_select("select id from robot_status where current_position='waitposition1';")
         # warehouse2,1の順にmove_listにappend
         pass
     else:
