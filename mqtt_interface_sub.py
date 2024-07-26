@@ -53,8 +53,9 @@ class MQTT_SUB:
         client = self.__connect_mqtt()
         self.__subscribe(client=client)
         self.__callback = cb
-        # client.loop_start()
-        client.loop_forever()
+        client.loop_start()
+        # client.loop_forever()
+
     def _callback(self,msg):
         print(msg)
 
