@@ -39,7 +39,8 @@ class MQTT_SUB:
     def __subscribe(self,client:mqtt):
         def __on_message(client,ud,msg):
             print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-            self.__callback(msg.payload.decode())
+            # self.__callback(msg.payload.decode())
+            self.__callback()
         
         client.subscribe(self.__topic)
         client.on_message = __on_message
@@ -53,15 +54,14 @@ class MQTT_SUB:
         client = self.__connect_mqtt()
         self.__subscribe(client=client)
         self.__callback = cb
-        client.loop_start()
-        # client.loop_forever()
-
-    def _callback(self,msg):
-        print(msg)
+        # client.loop_start()
+        client.loop_forever()
+    def callback(self):
+        print("callback")
 
 
 if __name__ == "__main__":
     mqtt_SUBSCRIBER = MQTT_SUB()
     # ここは引数に合わせて設定
-    mqtt_SUBSCRIBER.sub_run(broker_ip="localhost",topic_name="req/manage",cb=mqtt_SUBSCRIBER._callback)
+    mqtt_SUBSCRIBER.sub_run(broker_ip=your_ip,topic_name="req/manage",cb=mqtt_SUBSCRIBER.callback)
 

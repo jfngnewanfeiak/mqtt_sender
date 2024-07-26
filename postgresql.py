@@ -4,7 +4,7 @@ class POSTGRESQL:
     def __init__(self) -> None:
         self._host = ''
         self._user = ''
-        self._password = os.environ.get('MYPASSWORD')
+        self._password = 'password'
         self._database = ''
         self._db_connection = None
     
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # インスタンス作成
     DB = POSTGRESQL()
     # DBに接続するための設定
-    DB.setting_connection(host='localhost',user='postgres',database='mytable')
+    DB.setting_connection(host='10.77.114.51',user='postgres',database='mytable')
     # DBに接続
     DB.connect_DB()
     # select実行(以下はdata_bridgeというテーブルから全ての情報を引き出す)

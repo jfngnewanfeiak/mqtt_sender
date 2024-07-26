@@ -13,6 +13,15 @@ DB = POSTGRESQL()
 DB.setting_connection(host='localhost',user='postgres',database='mytable')
 DB.connect_DB()
 
+r0_mqtt = MQTT_PUB()
+r1_mqtt = MQTT_PUB()
+r2_mqtt = MQTT_PUB()
+# robotとmqtt通信する方のプログラム
+r0_mqtt.pub_con(broker_ip='localhost',topic_name='robot_sub0',pubmsg='None')
+r1_mqtt.pub_con(broker_ip='localhost',topic_name='robot_sub1',pubmsg="None")
+r2_mqtt.pub_con(broker_ip='localhost',topic_name='robot_sub2',pubmsg='None')
+
+
 
 def sub_callback(msg):
     # update文を書く
@@ -22,7 +31,7 @@ def sub_callback(msg):
     print(msg)
     print('受け取ったmsg')
     split_msg = msg.split('/')
-    if split_msg[0] == "Req" and split_msg[1] == "Robot":
+    if split_msg[0] == "ReqRobot":
         create_flow(msg=split_msg[2])
 
 def create_flow(msg):
@@ -36,10 +45,14 @@ def create_flow(msg):
     destination_list = [] # 目的地を保存,indexはmove_listより
     if Robot_Status[msg][2] == RobotPositionName.warehouse0:
         # warehouse1とwarehouse2にロボットがいるかDBより確認
+        # warehouse1とwarehouse2にいるロボットのidを返す
+        temp=DB.exec_select("select id from robot_status where current_position='waitposition0' or current_position='waitposition1';")
         # warehouse2,1,0の順番でmove_listにappend
+        
         pass
     elif Robot_Status[msg][2] == RobotPositionName.warehouse1:
         # warehouse2にロボットがいるか確認
+        DB.exec_select("select id from robot_status where current_position='waitposition1';")
         # warehouse2,1の順にmove_listにappend
         pass
     else:
@@ -76,6 +89,7 @@ def req_RobotState():
     # MQTTよりロボットにリクエスト
 
     # リクエストで得た最新の位置情報を更新(DBに更新)
+    DB.exec_update()
     pass
 
 # MQTT && DB
