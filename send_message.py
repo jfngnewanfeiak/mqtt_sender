@@ -10,7 +10,7 @@ your_ip = gethostbyname(gethostname())
 
 # フラグ用のやつ、ロボットの状態のやつも
 DB = POSTGRESQL()
-DB.setting_connection(host='localhost',user='postgres',database='mytable')
+DB.setting_connection(host='192.168.11.54',user='postgres',database='test')
 DB.connect_DB()
 
 r0_mqtt = MQTT_PUB()
@@ -37,7 +37,7 @@ def sub_callback(msg):
 def create_flow(msg):
     split_msg = msg.split("/")
     # 最新のロボットの情報をDBにて更新
-    req_RobotState()
+    # req_RobotState()
 
     # Robot_Statusは2次元配列を想定
     Robot_Status = get_RobotState()
@@ -46,24 +46,49 @@ def create_flow(msg):
     if Robot_Status[msg][2] == RobotPositionName.warehouse0:
         # warehouse1とwarehouse2にロボットがいるかDBより確認
         # warehouse1とwarehouse2にいるロボットのidを返す
-        temp=DB.exec_select("select id from robot_status where current_position='waitposition0' or current_position='waitposition1';")
+        temp=DB.exec_select("select id from robot_status where current_position='warehouse1' or current_position='warehouse2';")
         # warehouse2,1,0の順番でmove_listにappend
-        
         pass
     elif Robot_Status[msg][2] == RobotPositionName.warehouse1:
         # warehouse2にロボットがいるか確認
-        DB.exec_select("select id from robot_status where current_position='waitposition1';")
+        temp=DB.exec_select("select id from robot_status where current_position='warehouse2';")
         # warehouse2,1の順にmove_listにappend
+        if temp[0][0] == 2:
+            move_list.append(temp[0][0])
+            move_list.append(temp[1][0])
+
+        else:
+            move_list.append(temp[0][0])
         pass
     else:
         move_list.append(msg)
-    
-    destination_list = search_destination()
+
+    exec_move_robot(move_list)
+
 
 
 # mqtt通信で各ロボットに行先を送信
-def exec_move_robot(move_list,destination_list):
-    pass
+def exec_move_robot(move_list):
+    # mqttにて動かすロボットくりけす
+    for i in range(move_list):
+        DB.exec_update("update robot_status set isactive=True where id=${move_list[i};")
+        if move_list[i] == 0:
+            if i == 0:
+                r0_mqtt.pubmsg_setter("req/go/temp_posi")
+            else:
+                r0_mqtt.pubmsg_setter("req/go/destination")
+            r0_mqtt.pub_run()
+        elif move_list[i] == 1:
+            if i == 0:
+                r1_mqtt.pubmsg_setter("req/go/temp_posi")
+            else:
+                r1_mqtt.pubmsg_setter("req/go/destination")
+            r1_mqtt.pub_run()
+        else:
+            pass
+        while True:
+            pass
+
     
 # DB    
 def search_destination() -> list:
@@ -98,20 +123,26 @@ def get_RobotState():
 
 
 if __name__ == "__main__":
+    # DB.exec_select()はlistで返ってきてその中身はタプル
+
+
+    temp=DB.exec_select("select id,current_position from robot_status where current_position like 'waitposition%';")
+    print(temp)
+    print(type(temp))
     # パブリッシャーの設定
-    req_pub = MQTT_PUB() 
-    req_pub.pub_con(broker_ip=your_ip, topic_name="req/turtle", pubmsg="aaa")
+    # req_pub = MQTT_PUB()
+    # req_pub.pub_con(broker_ip=your_ip, topic_name="req/turtle", pubmsg="aaa")
 
     # サブスクライバーの設定
-    req_sub = MQTT_SUB()
-    req_sub.sub_run(broker_ip=your_ip, topic_name="req/manage", cb=sub_callback)
-    req_robot_sub = MQTT_SUB()
-    req_robot_sub.sub_run(broker_ip=your_ip,topic_name='req/move/robot',cb=sub_callback)
-    while True:
-        select_data = DB.exec_select('select value from data_bridge')
-        print(select_data)
-        sleep(1)
-    
-    
-    print('処理抜けた')
+    # req_sub = MQTT_SUB()
+    # req_sub.sub_run(broker_ip=your_ip, topic_name="req/manage", cb=sub_callback)
+    # req_robot_sub = MQTT_SUB()
+    # req_robot_sub.sub_run(broker_ip=your_ip,topic_name='req/move/robot',cb=sub_callback)
+    # while True:
+    #     select_data = DB.exec_select('select value from data_bridge')
+    #     print(select_data)
+    #     sleep(1)
+
+
+    # print('処理抜けた')
 
