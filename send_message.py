@@ -53,10 +53,12 @@ def sub_callback(msg):
     print(msg)
     print('受け取ったmsg')
     split_msg = msg.split('/')
-    if msg == "req/robot/1":
-        create_flow(msg=split_msg[2])
+    if msg.startswith("req/robot/1"):
+        create_flow(msg=split_msg[2],dest=split_msg[3])
+    # if msg == "req/robot/1":
+    #     create_flow(msg=split_msg[2])
 
-def create_flow(msg):
+def create_flow(msg,dest):
     # Robot_Statusは2次元配列を想定
     Robot_Status = DB.exec_select(f"select current_position from robot_status where id={msg};")
 
@@ -81,27 +83,27 @@ def create_flow(msg):
     else:
         move_list.append(msg)
 
-    exec_move_robot(move_list)
+    exec_move_robot(move_list,dest=dest)
 
 
 
 # mqtt通信で各ロボットに行先を送信
-def exec_move_robot(move_list):
+def exec_move_robot(move_list,dest):
     global status_callback_flag
     # mqttにて動かすロボットくりけす
     for i in range(len(move_list)):
         DB.exec_update(f"update robot_status set isactive=True where id={move_list[i]};")
         if move_list[i] == 0:
             if i == 0:
-                r0_mqtt.pubmsg_setter("req/go/temp_posi")
+                r0_mqtt.pubmsg_setter("req/go/waitposition")
             else:
-                r0_mqtt.pubmsg_setter("req/go/destination")
+                r0_mqtt.pubmsg_setter("req/go/"+dest)
             r0_mqtt.pub_run()
         elif move_list[i] == 1:
             if i == 0:
-                r1_mqtt.pubmsg_setter("req/go/temp_posi")
+                r1_mqtt.pubmsg_setter("req/go/waitposition")
             else:
-                r1_mqtt.pubmsg_setter("req/go/destination")
+                r1_mqtt.pubmsg_setter("req/go/"+dest)
             r1_mqtt.pub_run()
         else:
             pass
@@ -162,8 +164,20 @@ if __name__ == "__main__":
     req_robot_sub = MQTT_SUB()
     req_robot_sub.sub_run(broker_ip='localhost', topic_name='req/move/robot', cb=sub_callback)
     req_robot_pub = MQTT_PUB()
-    req_robot_pub.pub_con(broker_ip='localhost', topic_name='req/move/robot',pubmsg="req/robot/1")
+
+    # リクエストする配置先とロボットの指定
+    req_robot_pub.pub_con(broker_ip='localhost', topic_name='req/move/robot', pubmsg="req/robot/1")
+    send_msgs = ""
+    key = int(input("0:destination0, 1:destination1, 2:destination2"))
+    if key == 0:
+        send_msgs = "req/robot/1/destination0"
+    elif key == 1:
+        send_msgs = "req/robot/1/destination1"
+    else:
+        send_msgs = "req/robot/1/destination2"
+    req_robot_pub.pubmsg_setter(send_msgs)
     req_robot_pub.pub_run()
+
     while True:
         pass
     # rospy.spin()
